@@ -55,14 +55,6 @@ pub fn show(ui: &mut egui::Ui, packages: &[String], search: &mut String) {
                                                 eprintln!("Failed to launch terminal: {err}");
                                             }
                                         }
-
-                                        egui::Popup::from_toggle_button_response(&ui.button("Details"))
-                                            .close_behavior(egui::PopupCloseBehavior::CloseOnClickOutside)
-                                            .show(|ui| {
-                                                ui.heading(package);
-                                                ui.separator();
-                                                ui.label("Details go here.");
-                                            });
                                     });
                                 });
                             });

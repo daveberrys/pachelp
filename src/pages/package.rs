@@ -8,7 +8,7 @@ pub fn show(ui: &mut egui::Ui, packages: &mut Vec<String>, search: &mut String) 
             ui.heading("Packages");
             ui.label("Search for a package and view details, install or remove here.");
             ui.with_layout(egui::Layout::right_to_left(egui::Align::Min), |ui| {
-                if ui.button("Use AUR").clicked() {
+                if ui.button("Fetch AUR").clicked() {
                     let aur_packages = get_aur_package(search);
                     packages.extend(aur_packages)
                 }

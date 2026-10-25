@@ -38,25 +38,31 @@ pub fn show(ui: &mut egui::Ui, packages: &[String], search: &mut String) {
                 |ui, row_range| {
                     for &package in &filtered[row_range] {
                         egui::Frame::new()
-                            .inner_margin(4.0)
+                            .inner_margin(2.0)
                             .show(ui, |ui| {
-                                ui.horizontal(|ui| {
-                                    ui.label(package);
-            
-                                    ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
-                                        if ui.button("Install").clicked() {
-                                            if let Err(err) = open_in_terminal(&["sudo", "pacman", "-S", package]) {
-                                                eprintln!("Failed to launch terminal: {err}");
-                                            }
-                                        }
-
-                                        if ui.button("Remove").clicked() {
-                                            if let Err(err) = open_in_terminal(&["sudo", "pacman", "-Rs", package]) {
-                                                eprintln!("Failed to launch terminal: {err}");
-                                            }
-                                        }
-                                    });
-                                });
+                                egui::Frame::new()
+                                    .fill(egui::Color32::from_rgb(25, 25, 25))
+                                    .inner_margin(6.0)
+                                    .corner_radius(8)
+                                    .show(ui, |ui| {
+                                        ui.horizontal(|ui| {
+                                            ui.colored_label(egui::Color32::from_rgb(255, 255, 255), package);
+                    
+                                            ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
+                                                if ui.button("Install").clicked() {
+                                                    if let Err(err) = open_in_terminal(&["sudo", "pacman", "-S", package]) {
+                                                        eprintln!("Failed to launch terminal: {err}");
+                                                    }
+                                                }
+        
+                                                if ui.button("Remove").clicked() {
+                                                    if let Err(err) = open_in_terminal(&["sudo", "pacman", "-Rs", package]) {
+                                                        eprintln!("Failed to launch terminal: {err}");
+                                                    }
+                                                }
+                                            });
+                                        });
+                                    })
                             });
                     }
                 },

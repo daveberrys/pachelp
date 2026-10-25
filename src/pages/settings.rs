@@ -7,5 +7,6 @@ pub fn show(ui: &mut egui::Ui) {
             ui.heading("Settings");
             ui.label("Edit your settings here.");
             ui.separator();
+            ui.label("TODO: make real settings")
         });
 }

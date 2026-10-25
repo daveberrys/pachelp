@@ -11,7 +11,10 @@ As said above, it is a `pacman` and AUR helper through `paru` or `yay` through a
 
 ![PacHelp Preview](https://pbs.twimg.com/media/HVeHeIRaYAANW3Z?format=jpg&name=small)
 
-## Compiling
+## Download the binary
+Download it from here: [nightly.link](https://nightly.link/daveberrys/pachelp/workflows/build.yaml/master/PacHelp-Linux.zip)
+
+## Compiling from Scratch
 Ensure you have `rust`, and `cargo` installed.
 
 ```bash

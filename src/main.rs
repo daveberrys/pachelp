@@ -54,7 +54,7 @@ impl eframe::App for PacHelp {
         });
 
         if self.current_page == "Packages" {
-            package::show(ui, &self.packages, &mut self.search);
+            package::show(ui, &mut self.packages, &mut self.search);
         } else if self.current_page == "Settings" {
             settings::show(ui)
         } else {

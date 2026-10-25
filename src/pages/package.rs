@@ -1,17 +1,24 @@
 use eframe::egui;
 use std::process::Command;
 
-pub fn show(ui: &mut egui::Ui, packages: &[String], search: &mut String) {
+pub fn show(ui: &mut egui::Ui, packages: &mut Vec<String>, search: &mut String) {
     egui::Frame::new()
         .inner_margin(12.0)
         .show(ui, |ui| {
             ui.heading("Packages");
             ui.label("Search for a package and view details, install or remove here.");
-            ui.with_layout(egui::Layout::left_to_right(egui::Align::Min), |ui| {
+            ui.with_layout(egui::Layout::right_to_left(egui::Align::Min), |ui| {
                 if ui.button("Use AUR").clicked() {
-                    println!("AUR not implemented.")
+                    let aur_packages = get_aur_package(search);
+                    packages.extend(aur_packages)
                 }
-            
+
+                if ui.button("Update all packages").clicked() {
+                    if let Err(err) = open_in_terminal(&["sudo", "pacman", "-Syu",]) {
+                        eprintln!("Failed to launch terminal: {err}");
+                    }
+                }
+
                 ui.add(
                     egui::TextEdit::singleline(search)
                         .hint_text("Search packages...")
@@ -50,14 +57,28 @@ pub fn show(ui: &mut egui::Ui, packages: &[String], search: &mut String) {
                     
                                             ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
                                                 if ui.button("Install").clicked() {
-                                                    if let Err(err) = open_in_terminal(&["sudo", "pacman", "-S", package]) {
-                                                        eprintln!("Failed to launch terminal: {err}");
+                                                    if let Some(helper) = get_paru_or_yay() {
+                                                        if let Err(err) = open_in_terminal(&[helper.as_str(), "-Sy", package]) {
+                                                            eprintln!("Failed to launch terminal: {err}");
+                                                        }
+                                                    } else {
+                                                        eprintln!("Neither paru or yay is found. Falling back to pacman.");
+                                                        if let Err(err) = open_in_terminal(&["sudo", "pacman", "-Sy", package]) {
+                                                            eprintln!("Failed to launch terminal: {err}");
+                                                        }
                                                     }
                                                 }
         
                                                 if ui.button("Remove").clicked() {
-                                                    if let Err(err) = open_in_terminal(&["sudo", "pacman", "-Rs", package]) {
-                                                        eprintln!("Failed to launch terminal: {err}");
+                                                    if let Some(helper) = get_paru_or_yay() {
+                                                        if let Err(err) = open_in_terminal(&[helper.as_str(), "-Rs", package]) {
+                                                            eprintln!("Failed to launch terminal: {err}");
+                                                        }
+                                                    } else {
+                                                        eprintln!("Neither paru or yay is found. Falling back to pacman.");
+                                                        if let Err(err) = open_in_terminal(&["sudo", "pacman", "-Rs", package]) {
+                                                            eprintln!("Failed to launch terminal: {err}");
+                                                        }
                                                     }
                                                 }
                                             });
@@ -81,6 +102,38 @@ pub fn get_all_pacman_packages() -> Vec<String> {
         .map(|line| line.trim().to_string())
         .filter(|line| !line.is_empty())
         .collect()
+}
+
+fn get_aur_package(package: &str) -> Vec<String> {
+    let Some(helper) = get_paru_or_yay() else { return Vec::new(); };
+    let output = match Command::new(helper).args(["-Ss", "--color", "never", package]).output() {
+        Ok(output) => output,
+        Err(_) => return Vec::new(),
+    };
+
+    String::from_utf8_lossy(&output.stdout)
+        .lines()
+        .map(|line| line.trim().to_string())
+        .filter(|line| !line.starts_with(char::is_whitespace))
+        .filter_map(|line| {
+            let first = line.split_whitespace().next()?;
+            Some(first.rsplit('/').next()?.to_owned())
+        })
+        .collect()
+}
+
+fn get_paru_or_yay() -> Option<String> {
+    for program in ["paru", "yay"] {
+        if Command::new(program)
+            .arg("--version")
+            .output()
+            .is_ok()
+        {
+            return Some(program.to_string());
+        }
+    }
+
+    None
 }
 
 fn open_in_terminal(args: &[&str]) -> Result<(), String> {

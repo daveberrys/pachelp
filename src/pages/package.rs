@@ -1,19 +1,6 @@
 use eframe::egui;
 use std::process::Command;
 
-pub fn get_all_pacman_packages() -> Vec<String> {
-    let output = match Command::new("pacman").arg("-qQ").output() {
-        Ok(output) => output,
-        Err(_) => return Vec::new(),
-    };
-    
-    String::from_utf8_lossy(&output.stdout)
-        .lines()
-        .map(|line| line.trim().to_string())
-        .filter(|line| !line.is_empty())
-        .collect()
-}
-
 pub fn show(ui: &mut egui::Ui, packages: &[String]) {
     egui::Frame::new()
         .inner_margin(12.0)
@@ -37,11 +24,24 @@ pub fn show(ui: &mut egui::Ui, packages: &[String]) {
             
                                     ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
                                         if ui.button("Install").clicked() {
-                                            println!("Install clicked: {package}");
+                                            if let Err(err) = open_in_terminal(&["sudo", "pacman", "-S", package]) {
+                                                eprintln!("Failed to launch terminal: {err}");
+                                            }
                                         }
-                                        if ui.button("Details").clicked() {
-                                            println!("Details clicked: {package}");
+
+                                        if ui.button("Remove").clicked() {
+                                            if let Err(err) = open_in_terminal(&["sudo", "pacman", "-Rs", package]) {
+                                                eprintln!("Failed to launch terminal: {err}");
+                                            }
                                         }
+
+                                        egui::Popup::from_toggle_button_response(&ui.button("Details"))
+                                            .close_behavior(egui::PopupCloseBehavior::CloseOnClickOutside)
+                                            .show(|ui| {
+                                                ui.heading(package);
+                                                ui.separator();
+                                                ui.label("Details go here.");
+                                            });
                                     });
                                 });
                             });
@@ -49,4 +49,34 @@ pub fn show(ui: &mut egui::Ui, packages: &[String]) {
                 },
             );
         });
+}
+
+pub fn get_all_pacman_packages() -> Vec<String> {
+    let output = match Command::new("pacman").arg("-qQ").output() {
+        Ok(output) => output,
+        Err(_) => return Vec::new(),
+    };
+    
+    String::from_utf8_lossy(&output.stdout)
+        .lines()
+        .map(|line| line.trim().to_string())
+        .filter(|line| !line.is_empty())
+        .collect()
+}
+
+fn open_in_terminal(args: &[&str]) -> Result<(), String> {
+    let terminals = [
+        ("kitty", &["-e"][..]),
+        ("alacritty", &["-e"]),
+        ("konsole", &["-e"]),
+        ("gnome-terminal", &["--"]),
+        ("xterm", &["-e"]),
+    ];
+
+    for (terminal, flag) in terminals {
+        if Command::new(terminal).args(flag).args(args).spawn().is_ok() {
+            return Ok(());
+        }
+    }
+    Err("no terminal emulator found".to_string())
 }

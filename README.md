@@ -1,5 +1,10 @@
-# PacHelp
-A Pacman and AUR (paru/yay) helper.
+<div align="center">
+    <img src="assets/icon.png" width="256"/>
+    <h1>PacHelp</h1>
+    <p> A Pacman and AUR (paru/yay) helper.</p>
+</div>
+
+<br>
 
 ## What is PacHelp
 As said above, it is a `pacman` and AUR helper through `paru` or `yay` through a GUI instead of a CLI. Why a GUI? Because I fucking despise CLI.

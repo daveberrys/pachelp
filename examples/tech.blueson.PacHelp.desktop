@@ -1,0 +1,10 @@
+[Desktop Entry]
+Name=PacHelp
+Comment=A GUI way to install pacman and AUR (via paru/yay).
+Exec=/home/$HOME/.local/bin/appshortsies
+Icon=/home/$HOME/Documents/Apps/icon/AppShortsies.png
+Terminal=false
+Type=Application
+Categories=Utilities;
+StartupNotify=true
+Path=

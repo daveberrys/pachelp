@@ -21,7 +21,8 @@ fn main() -> eframe::Result<()> {
 #[derive(Default)]
 pub struct PacHelp {
     pub current_page: String,
-    pub packages: Vec<String>
+    pub packages: Vec<String>,
+    pub search: String,
 }
 
 impl eframe::App for PacHelp {
@@ -53,7 +54,7 @@ impl eframe::App for PacHelp {
         });
 
         if self.current_page == "Packages" {
-            package::show(ui, &self.packages);
+            package::show(ui, &self.packages, &mut self.search);
         } else if self.current_page == "Settings" {
             settings::show(ui)
         } else {

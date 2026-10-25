@@ -1,21 +1,42 @@
 use eframe::egui;
 use std::process::Command;
 
-pub fn show(ui: &mut egui::Ui, packages: &[String]) {
+pub fn show(ui: &mut egui::Ui, packages: &[String], search: &mut String) {
     egui::Frame::new()
         .inner_margin(12.0)
         .show(ui, |ui| {
             ui.heading("Packages");
-            ui.label("Search for a package and view its details here.");
+            ui.label("Search for a package and view details, install or remove here.");
+            ui.with_layout(egui::Layout::left_to_right(egui::Align::Min), |ui| {
+                if ui.button("Use AUR").clicked() {
+                    println!("AUR not implemented.")
+                }
+            
+                ui.add(
+                    egui::TextEdit::singleline(search)
+                        .hint_text("Search packages...")
+                        .desired_width(f32::INFINITY),
+                );
+            });
             ui.separator();
+
+            let query = search.to_lowercase();
+            let filtered: Vec<&String> = packages
+                .iter()
+                .filter(|name| name.to_lowercase().contains(&query))
+                .collect();
+
+            if filtered.is_empty() {
+                ui.label("No packages match your search.");
+            }
 
             let row_height = ui.text_style_height(&egui::TextStyle::Button) + 12.0;
             egui::ScrollArea::vertical().show_rows(
                 ui,
                 row_height,
-                packages.len(),
+                filtered.len(),
                 |ui, row_range| {
-                    for package in &packages[row_range] {
+                    for &package in &filtered[row_range] {
                         egui::Frame::new()
                             .inner_margin(4.0)
                             .show(ui, |ui| {
